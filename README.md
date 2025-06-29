@@ -22,7 +22,7 @@ Calculadora web interativa desenvolvida para ajudar estudantes universitários a
 
 Acesse a calculadora diretamente pelo GitHub Pages:
 
-➡️ **[[https://SEU_USUARIO.github.io/NOME_DO_REPOSITORIO](https://SEU_USUARIO.github.io/NOME_DO_REPOSITORIO](https://martinsmussinda.github.io/calculadora-aprovacao-iph/))**
+➡️ **https://martinsmussinda.github.io/calculadora-aprovacao-iph/**
 
 ## 🛠️ Como usar
 
