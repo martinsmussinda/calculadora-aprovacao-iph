@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Aprovação</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --light-gray: #f8f9fa;
+            --dark-gray: #343a40;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .calculator-card {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            max-width: 500px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .calculator-card h1 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-size: 28px;
+            color: var(--primary-color);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box; 
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+        
+        input[type="number"]:disabled {
+            background-color: var(--light-gray);
+            cursor: not-allowed;
+        }
+        
+        /* Estilo para inputs com erro de validação */
+        input.invalid {
+            border-color: var(--danger-color);
+        }
+
+        /* Nova área para mensagens de erro */
+        .error-message {
+            color: var(--danger-color);
+            background-color: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none; /* Escondido por padrão */
+        }
+
+        .resultado {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f7f7f7;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .resultado p {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .resultado span {
+            font-weight: bold;
+        }
+        
+        .resultado.aprovado {
+            border-left: 5px solid var(--success-color);
+        }
+        .resultado.reprovado {
+            border-left: 5px solid var(--danger-color);
+        }
+        .resultado.exame {
+            border-left: 5px solid var(--warning-color);
+        }
+
+        /* Estilos para ocultar/mostrar grupos de notas */
+        .grade-inputs {
+            display: none; /* Escondido por padrão */
+        }
+        .grade-inputs.active {
+            display: block; /* Mostrado quando ativo */
+        }
+
+        .author-info {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            font-size: 14px;
+            color: #888;
+        }
+        
+        .author-info p {
+            margin: 5px 0;
+        }
+        .author-info a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        .author-info a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 15px; }
+            .calculator-card { padding: 25px; }
+            .calculator-card h1 { font-size: 24px; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 10px; align-items: flex-start; }
+            .calculator-card { padding: 20px; }
+            .calculator-card h1 { font-size: 22px; margin-bottom: 20px; }
+            input[type="text"], input[type="number"], select { padding: 10px; font-size: 15px; }
+            .resultado { padding: 15px; }
+            .author-info { font-size: 12px; margin-top: 25px; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="calculator-card">
+        <h1>Calculadora de Aprovação</h1>
+        
+        <div class="error-message" id="error-container"></div>
+
+        <div class="input-group">
+            <label for="courseName">Nome da Cadeira</label>
+            <input type="text" id="courseName" placeholder="Ex: Matemática, Programação">
+        </div>
+        
+        <div class="input-group">
+            <label for="courseType">Tipo de Cadeira</label>
+            <select id="courseType">
+                <option value="">Selecione o tipo</option>
+                <option value="semestral">Semestral</option>
+                <option value="anual">Anual</option>
+            </select>
+        </div>
+
+        <div id="semestralInputs" class="grade-inputs">
+            <div class="input-group">
+                <label for="f1Semestral">Nota da Frequência 1</label>
+                <input type="number" id="f1Semestral" step="0.1" min="0" max="20" placeholder="Insira a nota de 0 a 20">
+            </div>
+            
+            <div class="input-group">
+                <label for="f2Semestral">Nota da Frequência 2</label>
+                <input type="number" id="f2Semestral" step="0.1" min="0" max="20" placeholder="Insira a nota de 0 a 20">
+            </div>
+        </div>
+
+        <div id="anualInputs" class="grade-inputs">
+            <div class="input-group">
+                <label for="f1Anual">Nota da Frequência 1 (1º Semestre)</label>
+                <input type="number" id="f1Anual" step="0.1" min="0" max="20" placeholder="Insira a nota de 0 a 20">
+            </div>
+            
+            <div class="input-group">
+                <label for="f2Anual">Nota da Frequência 2 (1º Semestre)</label>
+                <input type="number" id="f2Anual" step="0.1" min="0" max="20" placeholder="Insira a nota de 0 a 20">
+            </div>
+
+            <div class="input-group">
+                <label for="f3Anual">Nota da Frequência 3 (2º Semestre)</label>
+                <input type="number" id="f3Anual" step="0.1" min="0" max="20" placeholder="Insira a nota de 0 a 20">
+            </div>
+            
+            <div class="input-group">
+                <label for="f4Anual">Nota da Frequência 4 (2º Semestre)</label>
+                <input type="number" id="f4Anual" step="0.1" min="0" max="20" placeholder="Insira a nota de 0 a 20">
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="exame">Nota do Exame (se aplicável)</label>
+            <input type="number" id="exame" step="0.1" min="0" max="20" placeholder="Apenas se necessário" disabled>
+        </div>
+        
+        <div class="resultado" id="output"></div>
+
+        <div class="author-info">
+            <p>Desenvolvido por <b>MARTINS MUSSINDA</b></p>
+            <p>Contacto: <a href="https://wa.me/244932964743" target="_blank" rel="noopener noreferrer">+244 932 964 743</a></p>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const courseNameInput = document.getElementById('courseName');
+            const courseTypeSelect = document.getElementById('courseType');
+            const semestralInputsDiv = document.getElementById('semestralInputs');
+            const anualInputsDiv = document.getElementById('anualInputs');
+
+            // Inputs Semestrais
+            const f1SemestralInput = document.getElementById('f1Semestral');
+            const f2SemestralInput = document.getElementById('f2Semestral');
+            
+            // Inputs Anuais
+            const f1AnualInput = document.getElementById('f1Anual');
+            const f2AnualInput = document.getElementById('f2Anual');
+            const f3AnualInput = document.getElementById('f3Anual');
+            const f4AnualInput = document.getElementById('f4Anual');
+
+            const exameInput = document.getElementById('exame');
+            const outputDiv = document.getElementById('output');
+            const errorContainer = document.getElementById('error-container');
+            
+            // Adicionar event listeners aos inputs e ao select
+            courseTypeSelect.addEventListener('change', toggleCourseTypeInputs);
+            [f1SemestralInput, f2SemestralInput, f1AnualInput, f2AnualInput, f3AnualInput, f4AnualInput, exameInput].forEach(input => {
+                input.addEventListener('input', calcular);
+            });
+            courseNameInput.addEventListener('input', calcular); // Para atualizar o nome da cadeira no output
+
+            // Função para alternar a exibição dos campos de notas
+            function toggleCourseTypeInputs() {
+                const selectedType = courseTypeSelect.value;
+                
+                // Oculta e limpa todos os campos de notas
+                semestralInputsDiv.classList.remove('active');
+                anualInputsDiv.classList.remove('active');
+                [f1SemestralInput, f2SemestralInput, f1AnualInput, f2AnualInput, f3AnualInput, f4AnualInput, exameInput].forEach(input => {
+                    input.value = '';
+                    input.classList.remove('invalid');
+                });
+                exameInput.disabled = true; // Desabilita o exame ao trocar o tipo
+                outputDiv.style.display = 'none';
+                errorContainer.style.display = 'none';
+
+                if (selectedType === 'semestral') {
+                    semestralInputsDiv.classList.add('active');
+                } else if (selectedType === 'anual') {
+                    anualInputsDiv.classList.add('active');
+                }
+                calcular(); // Recalcula após a mudança de tipo
+            }
+
+            function calcular() {
+                // Resetar erros visuais
+                errorContainer.style.display = 'none';
+                [f1SemestralInput, f2SemestralInput, f1AnualInput, f2AnualInput, f3AnualInput, f4AnualInput, exameInput].forEach(input => input.classList.remove('invalid'));
+
+                const courseName = courseNameInput.value.trim() || 'Esta Cadeira'; // Nome da cadeira
+                const courseType = courseTypeSelect.value;
+                let notasParaCalcular = [];
+                let isAnnual = false;
+                
+                // Determinar quais notas usar com base no tipo de cadeira
+                if (courseType === 'semestral') {
+                    const f1 = parseFloat(f1SemestralInput.value);
+                    const f2 = parseFloat(f2SemestralInput.value);
+                    if (!isNaN(f1)) notasParaCalcular.push({input: f1SemestralInput, value: f1});
+                    if (!isNaN(f2)) notasParaCalcular.push({input: f2SemestralInput, value: f2});
+                } else if (courseType === 'anual') {
+                    isAnnual = true;
+                    const f1 = parseFloat(f1AnualInput.value);
+                    const f2 = parseFloat(f2AnualInput.value);
+                    const f3 = parseFloat(f3AnualInput.value);
+                    const f4 = parseFloat(f4AnualInput.value);
+                    if (!isNaN(f1)) notasParaCalcular.push({input: f1AnualInput, value: f1});
+                    if (!isNaN(f2)) notasParaCalcular.push({input: f2AnualInput, value: f2});
+                    if (!isNaN(f3)) notasParaCalcular.push({input: f3AnualInput, value: f3});
+                    if (!isNaN(f4)) notasParaCalcular.push({input: f4AnualInput, value: f4});
+                } else {
+                    // Nenhum tipo selecionado ou inválido, ocultar tudo
+                    outputDiv.style.display = 'none';
+                    exameInput.disabled = true;
+                    return;
+                }
+
+                const exame = parseFloat(exameInput.value);
+                
+                // Validação de intervalo (0-20) para as notas relevantes
+                let validationError = false;
+                const checkValidity = (input, value) => {
+                    if (input.value !== '' && (value < 0 || value > 20)) {
+                        input.classList.add('invalid');
+                        validationError = true;
+                    }
+                };
+
+                notasParaCalcular.forEach(nota => checkValidity(nota.input, nota.value));
+                if (exameInput.value !== '') checkValidity(exameInput, exame);
+
+                if (validationError) {
+                    errorContainer.textContent = 'As notas devem estar entre 0 e 20.';
+                    errorContainer.style.display = 'block';
+                    outputDiv.style.display = 'none';
+                    return;
+                }
+
+                // Verificar se todas as frequências necessárias estão preenchidas
+                if (notasParaCalcular.length < (isAnnual ? 4 : 2)) {
+                    outputDiv.style.display = 'none';
+                    exameInput.disabled = true;
+                    return;
+                }
+
+                const somaFrequencias = notasParaCalcular.reduce((sum, nota) => sum + nota.value, 0);
+                const mediaFrequencias = somaFrequencias / notasParaCalcular.length;
+                
+                // LÓGICA DE DISPENSA: Média das frequências >= 13.5 E todas as frequências >= 9.5
+                const todasPositivas = notasParaCalcular.every(nota => nota.value >= 9.5);
+                const dispensado = mediaFrequencias >= 13.5 && todasPositivas;
+                
+                let notaFinal = 0;
+                let aprovado = false;
+                let mensagemFinal = '';
+                
+                outputDiv.style.display = 'block';
+                outputDiv.className = 'resultado'; // Resetar classes
+
+                if (dispensado) {
+                    exameInput.disabled = true;
+                    exameInput.value = ''; // Limpar o campo de exame
+                    
+                    notaFinal = mediaFrequencias;
+                    aprovado = true;
+                    
+                    outputDiv.classList.add('aprovado');
+                    mensagemFinal = `<p><strong>Status:</strong> <span style="color: var(--success-color);">Aprovado (Dispensado) 🎉</span></p>`;
+
+                } else {
+                    exameInput.disabled = false;
+                    
+                    // Cálculo da nota necessária no exame
+                    // Nota Final = 0.4 * Média Frequências + 0.6 * Exame
+                    // Se Nota Final >= 9.5: 9.5 = 0.4 * Média Frequências + 0.6 * Exame
+                    // Exame = (9.5 - (0.4 * Média Frequências)) / 0.6
+                    const exameNecessario = (9.5 - (0.4 * mediaFrequencias)) / 0.6; 
+                    
+                    let mensagemExame = '';
+                    if (exameNecessario > 20) {
+                        mensagemExame = `<p>Nota necessária p/ aprovar: <span style="color: var(--danger-color);">Impossível aprovar</span></p>`;
+                    } else if (exameNecessario <= 0) { // Se o valor necessário for 0 ou negativo, significa que já passa sem exame (ou com 0)
+                         mensagemExame = `<p>Nota necessária p/ aprovar: <span>0.0</span></p>`;
+                    }
+                    else {
+                        mensagemExame = `<p>Nota necessária p/ aprovar: <span>${exameNecessario.toFixed(1)}</span></p>`;
+                    }
+                    
+                    if (isNaN(exame)) {
+                        outputDiv.classList.add('exame');
+                        mensagemFinal = `
+                            <p>${courseName} precisa de ir a exame.</p>
+                            ${mensagemExame}
+                        `;
+                    } else {
+                        notaFinal = 0.4 * mediaFrequencias + 0.6 * exame;
+                        aprovado = notaFinal >= 9.5; // Aprovação com nota final >= 9.5
+                        
+                        if (aprovado) {
+                            outputDiv.classList.add('aprovado');
+                            mensagemFinal = `<p><strong>Status:</strong> <span style="color: var(--success-color);">Aprovado 🎉</span></p>`;
+                        } else {
+                            outputDiv.classList.add('reprovado');
+                            mensagemFinal = `<p><strong>Status:</strong> <span style="color: var(--danger-color);">Reprovado 😓</span></p>`;
+                        }
+                    }
+                }
+                
+                outputDiv.innerHTML = `
+                    <p>Cadeira: <span>${courseName}</span></p>
+                    <p>Média das Frequências: <span>${mediaFrequencias.toFixed(1)}</span></p>
+                    ${!isNaN(exame) && !dispensado ? `<p>Nota Final: <span>${notaFinal.toFixed(1)}</span></p>` : ''}
+                    ${mensagemFinal}
+                `;
+            }
+
+            // Inicializar a calculadora ao carregar a página (oculta campos extras)
+            toggleCourseTypeInputs();
+        });
+    </script>
+</body>
+</html>
