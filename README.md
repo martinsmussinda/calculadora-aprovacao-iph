@@ -1,7 +1,5 @@
 # 📘 Calculadora de Aprovação Corrigida
 
-![Banner Calculadora de Aprovação](https://raw.githubusercontent.com/MrBelovedAI/assets/main/banner-aprovacao.png)
-
 Calculadora web interativa desenvolvida para ajudar estudantes universitários a saberem rapidamente se estão **dispensados**, **aprovados** ou **reprovados** com base nas suas notas das frequências e do exame.
 
 > 🧠 Ideal para cursos com regras de avaliação baseadas em média de frequências e nota final composta.
