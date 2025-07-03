@@ -1,4 +1,4 @@
-# 📘 Calculadora de Aprovação
+# 📘 Calculadora - Nota Certa 
 
 Calculadora web interativa desenvolvida para ajudar estudantes universitários a saberem rapidamente se estão **dispensados**, **aprovados** ou **reprovados** com base nas suas notas das frequências e do exame.
 
