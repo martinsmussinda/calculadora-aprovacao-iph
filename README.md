@@ -22,7 +22,7 @@ Calculadora web interativa desenvolvida para ajudar estudantes universitários a
 
 Acesse a calculadora diretamente pelo GitHub Pages:
 
-➡️ **https://github.com/martinsmussinda/nota-certa-calculadora/**
+➡️ **https://martinsmussinda.github.io/nota-certa-calculadora/**
 
 ## 🛠️ Como usar
 
